@@ -83,7 +83,7 @@ class HBNBCommand(cmd.Cmd):
 
         except Exception as mess:
             pass
-        finally:
+
             return line
 
     def postcmd(self, stop, line):
@@ -114,32 +114,58 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class, with optional key=value params"""
+        """Create an object with optional key=value parameters."""
         if not args:
             print("** class name missing **")
             return
+
         tokens = args.split()
         c_name = tokens[0]
+
         if c_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
+
         kwargs = {}
+
         for param in tokens[1:]:
             if '=' not in param:
                 continue
+
             key, value = param.split('=', 1)
-            if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
-                value = value[1:-1].replace('\\"', '"').replace('_', ' ')
+
+            if not key or not value:
+                continue
+
+            # Quoted strings
+            if value.startswith('"'):
+                if not value.endswith('"'):
+                    continue
+
+                value = value[1:-1]
+                value = value.replace('\\"', '"')
+                value = value.replace('_', ' ')
+                kwargs[key] = value
+
+            # Floating-point values
+            elif '.' in value:
+                try:
+                    kwargs[key] = float(value)
+                except ValueError:
+                    continue
+
+            # Integer values
             else:
                 try:
-                    value = int(value)
+                    kwargs[key] = int(value)
                 except ValueError:
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        continue
-            kwargs[key] = value
-        new_instance = HBNBCommand.classes[c_name](**kwargs)
+                    continue
+
+        try:
+            new_instance = HBNBCommand.classes[c_name](**kwargs)
+        except (TypeError, KeyError, ValueError):
+            return
+
         new_instance.save()
         print(new_instance.id)
 
@@ -289,7 +315,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -297,10 +323,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
