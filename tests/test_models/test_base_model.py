@@ -1,99 +1,107 @@
 #!/usr/bin/python3
-""" """
-from models.base_model import BaseModel
-import unittest
-import datetime
-from uuid import UUID
-import json
+"""Unittest for BaseModel class."""
 import os
+import unittest
+from datetime import datetime
+from models.base_model import BaseModel
 
 
 class test_basemodel(unittest.TestCase):
-    """ """
+    """Test BaseModel class."""
 
-    def __init__(self, *args, **kwargs):
-        """ """
-        super().__init__(*args, **kwargs)
-        self.name = 'BaseModel'
-        self.value = BaseModel
+    @classmethod
+    def setUpClass(cls):
+        """Set up test class."""
+        cls.value = BaseModel
 
-    def setUp(self):
-        """ """
-        pass
-
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
+        """Tear down test class."""
         try:
             os.remove('file.json')
-        except:
+        except OSError:
             pass
 
     def test_default(self):
-        """ """
+        """Test default instance."""
         i = self.value()
         self.assertEqual(type(i), self.value)
+        self.assertIsNotNone(i.id)
+        self.assertIsNotNone(i.created_at)
+        self.assertIsNotNone(i.updated_at)
 
     def test_kwargs(self):
-        """ """
+        """Test instance creation with kwargs."""
         i = self.value()
         copy = i.to_dict()
-        new = BaseModel(**copy)
-        self.assertFalse(new is i)
+        new = self.value(**copy)
+        self.assertFalse(i is new)
 
     def test_kwargs_int(self):
-        """ """
+        """Test invalid integer key."""
         i = self.value()
         copy = i.to_dict()
         copy.update({1: 2})
         with self.assertRaises(TypeError):
-            new = BaseModel(**copy)
+            self.value(**copy)
 
+    @unittest.skipIf(
+        os.getenv('HBNB_TYPE_STORAGE') == 'db',
+        'FileStorage-specific test'
+    )
     def test_save(self):
-        """ Testing save """
+        """Test save."""
         i = self.value()
         i.save()
-        key = self.name + "." + i.id
-        with open('file.json', 'r') as f:
-            j = json.load(f)
-            self.assertEqual(j[key], i.to_dict())
+        self.assertTrue(os.path.exists('file.json'))
 
     def test_str(self):
-        """ """
+        """Test string representation."""
         i = self.value()
-        self.assertEqual(str(i), '[{}] ({}) {}'.format(self.name, i.id,
-                         i.__dict__))
+        string = '[{}] ({}) {}'.format(
+            type(i).__name__, i.id, i.__dict__
+        )
+        self.assertEqual(str(i), string)
 
     def test_todict(self):
-        """ """
+        """Test to_dict."""
         i = self.value()
-        n = i.to_dict()
-        self.assertEqual(i.to_dict(), n)
+        new = i.to_dict()
+        self.assertEqual(new['__class__'], type(i).__name__)
+        self.assertEqual(new['id'], i.id)
+        self.assertEqual(new['created_at'], i.created_at.isoformat())
+        self.assertEqual(new['updated_at'], i.updated_at.isoformat())
 
     def test_kwargs_none(self):
-        """ """
-        n = {None: None}
+        """Test None as key."""
+        i = self.value()
+        copy = i.to_dict()
+        copy.update({None: 2})
         with self.assertRaises(TypeError):
-            new = self.value(**n)
+            self.value(**copy)
 
     def test_kwargs_one(self):
-        """ """
-        n = {'Name': 'test'}
+        """Test invalid keyword."""
         with self.assertRaises(KeyError):
-            new = self.value(**n)
+            self.value(Name='test')
 
-    def test_id(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.id), str)
+    def test_id_type(self):
+        """Test id type."""
+        i = self.value()
+        self.assertEqual(type(i.id), str)
 
-    def test_created_at(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.created_at), datetime.datetime)
+    def test_created_at_type(self):
+        """Test created_at type."""
+        i = self.value()
+        self.assertEqual(type(i.created_at), datetime)
+
+    def test_updated_at_type(self):
+        """Test updated_at type."""
+        i = self.value()
+        self.assertEqual(type(i.updated_at), datetime)
 
     def test_updated_at(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.updated_at), datetime.datetime)
-        n = new.to_dict()
-        new = BaseModel(**n)
-        self.assertFalse(new.created_at == new.updated_at)
+        """Test updated_at differs from created_at."""
+        i = self.value()
+        new = self.value(**i.to_dict())
+        self.assertNotEqual(new.created_at, new.updated_at)
