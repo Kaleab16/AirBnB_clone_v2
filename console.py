@@ -115,12 +115,14 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """Create an object with optional key=value parameters."""
-        if not args:
+        import re
+
+        if not args or not args.strip():
             print("** class name missing **")
             return
 
-        tokens = args.split()
-        c_name = tokens[0]
+        parts = args.strip().split(maxsplit=1)
+        c_name = parts[0]
 
         if c_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
@@ -128,45 +130,49 @@ class HBNBCommand(cmd.Cmd):
 
         kwargs = {}
 
-        for param in tokens[1:]:
-            if '=' not in param:
-                continue
+        if len(parts) > 1:
+            pattern = r"""([A-Za-z_][A-Za-z0-9_]*)=(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|(\S+))"""
 
-            key, value = param.split('=', 1)
+            for match in re.finditer(pattern, parts[1]):
+                key = match.group(1)
+                quoted = match.group(2) is not None or match.group(3) is not None
 
-            if not key or not value:
-                continue
+                if match.group(2) is not None:
+                    value = match.group(2)
+                    value = value.replace(r'\\"', '"').replace("_", " ")
+                elif match.group(3) is not None:
+                    value = match.group(3)
+                    value = value.replace(r"\\'", "'").replace("_", " ")
+                else:
+                    value = match.group(4)
 
-            # Quoted strings
-            if value.startswith('"'):
-                if not value.endswith('"'):
+                if not value:
                     continue
 
-                value = value[1:-1]
-                value = value.replace('\\"', '"')
-                value = value.replace('_', ' ')
-                kwargs[key] = value
-
-            # Floating-point values
-            elif '.' in value:
-                try:
-                    kwargs[key] = float(value)
-                except ValueError:
+                if quoted:
+                    kwargs[key] = value
                     continue
 
-            # Integer values
-            else:
                 try:
-                    kwargs[key] = int(value)
-                except ValueError:
+                    if key in HBNBCommand.types:
+                        kwargs[key] = HBNBCommand.types[key](value)
+                    else:
+                        try:
+                            kwargs[key] = int(value)
+                        except ValueError:
+                            try:
+                                kwargs[key] = float(value)
+                            except ValueError:
+                                kwargs[key] = value
+                except (ValueError, TypeError, OverflowError):
                     continue
 
         try:
             new_instance = HBNBCommand.classes[c_name](**kwargs)
+            new_instance.save()
         except (TypeError, KeyError, ValueError):
             return
 
-        new_instance.save()
         print(new_instance.id)
 
     def help_create(self):
