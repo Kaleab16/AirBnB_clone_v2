@@ -87,6 +87,29 @@ class TestConsoleFileStorage(unittest.TestCase):
         self.assertNotIn("User." + new_id, storage.all())
 
 
+    def test_create_place_numeric_edge_values(self):
+        """Test quoted values, zero, negative integers, and floats."""
+        command = (
+            'create Place city_id="test_city" user_id="test_user" '
+            'name="My_Little_House" description="A small test house" '
+            'number_rooms=2 number_bathrooms=0 max_guest=-3 '
+            'price_by_night=100 latitude=-120.12 longitude=0.41921928'
+        )
+        new_id = run(command)
+        obj = storage.all()["Place." + new_id]
+
+        self.assertEqual("test city", obj.city_id)
+        self.assertEqual("test user", obj.user_id)
+        self.assertEqual("My Little House", obj.name)
+        self.assertEqual("A small test house", obj.description)
+        self.assertEqual(2, obj.number_rooms)
+        self.assertEqual(0, obj.number_bathrooms)
+        self.assertEqual(-3, obj.max_guest)
+        self.assertEqual(100, obj.price_by_night)
+        self.assertEqual(-120.12, obj.latitude)
+        self.assertEqual(0.41921928, obj.longitude)
+
+
 @unittest.skipIf(not DB, "DBStorage only")
 class TestConsoleDBStorage(unittest.TestCase):
     """create checked directly against MySQL (not through SQLAlchemy)"""
