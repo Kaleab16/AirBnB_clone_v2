@@ -1,6 +1,16 @@
--- Prepares a MySQL server for the AirBnB project
+-- Create the development database if it does not exist.
 CREATE DATABASE IF NOT EXISTS hbnb_dev_db;
-CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost' IDENTIFIED BY 'hbnb_dev_pwd';
+
+-- Create the development user if it does not exist.
+CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost'
+IDENTIFIED BY 'hbnb_dev_pwd';
+
+-- Ensure the required password is set, including for an existing user.
+ALTER USER 'hbnb_dev'@'localhost'
+IDENTIFIED BY 'hbnb_dev_pwd';
+
+-- Grant privileges only on the development database.
 GRANT ALL PRIVILEGES ON hbnb_dev_db.* TO 'hbnb_dev'@'localhost';
+
+-- Grant read access only on performance_schema.
 GRANT SELECT ON performance_schema.* TO 'hbnb_dev'@'localhost';
-FLUSH PRIVILEGES;
