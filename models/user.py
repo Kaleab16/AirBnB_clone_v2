@@ -32,6 +32,6 @@ class User(BaseModel, Base):
         """Initialize a User."""
         kwargs.setdefault('email', '')
         kwargs.setdefault('password', '')
-        kwargs.setdefault('first_name', '')
-        kwargs.setdefault('last_name', '')
+        kwargs.setdefault('first_name', None)
+        kwargs.setdefault('last_name', None)
         super().__init__(*args, **kwargs)

@@ -131,11 +131,14 @@ class HBNBCommand(cmd.Cmd):
         kwargs = {}
 
         if len(parts) > 1:
-            pattern = r"""([A-Za-z_][A-Za-z0-9_]*)=(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|(\S+))"""
+            pattern = r"""([A-Za-z_][A-Za-z0-9_]*)=(?:"((?:\\\\.|[^"\\\\])*)"|'((?:\\\\.|[^'\\\\])*)'|(\\S+))"""
 
             for match in re.finditer(pattern, parts[1]):
                 key = match.group(1)
-                quoted = match.group(2) is not None or match.group(3) is not None
+                quoted = (
+                    match.group(2) is not None
+                    or match.group(3) is not None
+                )
 
                 if match.group(2) is not None:
                     value = match.group(2)
@@ -166,6 +169,11 @@ class HBNBCommand(cmd.Cmd):
                                 kwargs[key] = value
                 except (ValueError, TypeError, OverflowError):
                     continue
+
+        # A User requires both email and password.
+        if c_name == "User":
+            if not kwargs.get("email") or not kwargs.get("password"):
+                return
 
         try:
             new_instance = HBNBCommand.classes[c_name](**kwargs)
@@ -247,22 +255,17 @@ class HBNBCommand(cmd.Cmd):
         print("[Usage]: destroy <className> <objectId>\n")
 
     def do_all(self, args):
-        """ Shows all objects, or all objects of a class"""
-        print_list = []
-
+        """Show all objects, or all objects of a class."""
         if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
+            c_name = args.split()[0]
+            if c_name not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            objects = storage.all(HBNBCommand.classes[c_name])
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
+            objects = storage.all()
 
-        print(print_list)
+        print([str(obj) for obj in objects.values()])
 
     def help_all(self):
         """ Help information for the all command """
