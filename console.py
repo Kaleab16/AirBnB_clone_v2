@@ -131,7 +131,7 @@ class HBNBCommand(cmd.Cmd):
         kwargs = {}
 
         if len(parts) > 1:
-            pattern = r"""([A-Za-z_][A-Za-z0-9_]*)=(?:"((?:\\\\.|[^"\\\\])*)"|'((?:\\\\.|[^'\\\\])*)'|(\\S+))"""
+            pattern = r"""([A-Za-z_][A-Za-z0-9_]*)=(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|(\S+))"""
 
             for match in re.finditer(pattern, parts[1]):
                 key = match.group(1)
@@ -188,32 +188,28 @@ class HBNBCommand(cmd.Cmd):
         print("Creates a class of any type")
         print("[Usage]: create <className>\n")
 
-    def do_show(self, args):
-        """ Method to show an individual object """
-        new = args.partition(" ")
-        c_name = new[0]
-        c_id = new[2]
+    def do_show(self, arg):
+        """Print the string representation of an instance."""
+        args = arg.split()
 
-        # guard against trailing args
-        if c_id and ' ' in c_id:
-            c_id = c_id.partition(' ')[0]
-
-        if not c_name:
+        if not args:
             print("** class name missing **")
             return
 
-        if c_name not in HBNBCommand.classes:
+        if args[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
 
-        if not c_id:
+        if len(args) < 2:
             print("** instance id missing **")
             return
 
-        key = c_name + "." + c_id
-        try:
-            print(storage._FileStorage__objects[key])
-        except KeyError:
+        key = "{}.{}".format(args[0], args[1])
+        objects = storage.all()
+
+        if key in objects:
+            print(objects[key])
+        else:
             print("** no instance found **")
 
     def help_show(self):

@@ -69,13 +69,13 @@ class Place(BaseModel, Base):
             'city_id': '',
             'user_id': '',
             'name': '',
-            'description': '',
+            'description': None,
             'number_rooms': 0,
             'number_bathrooms': 0,
             'max_guest': 0,
             'price_by_night': 0,
-            'latitude': 0.0,
-            'longitude': 0.0
+            'latitude': None,
+            'longitude': None
         }
 
         for key, value in defaults.items():
