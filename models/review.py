@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-""" Review module for the HBNB project """
+"""Review module for HBNB project."""
 
 from sqlalchemy import Column, ForeignKey, String
 
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
 
 
-class Review(BaseModel):
-    """ Review class """
+class Review(BaseModel, Base):
+    """Review class."""
 
     __tablename__ = 'reviews'
 
@@ -25,10 +25,7 @@ class Review(BaseModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize a Review."""
-        if 'place_id' not in kwargs:
-            kwargs['place_id'] = ''
-        if 'user_id' not in kwargs:
-            kwargs['user_id'] = ''
-        if 'text' not in kwargs:
-            kwargs['text'] = ''
+        kwargs.setdefault('place_id', '')
+        kwargs.setdefault('user_id', '')
+        kwargs.setdefault('text', '')
         super().__init__(*args, **kwargs)

@@ -4,10 +4,10 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
 
 
-class User(BaseModel):
+class User(BaseModel, Base):
     """This class defines a user by various attributes."""
 
     __tablename__ = 'users'
@@ -30,12 +30,8 @@ class User(BaseModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize a User."""
-        if 'email' not in kwargs:
-            kwargs['email'] = ''
-        if 'password' not in kwargs:
-            kwargs['password'] = ''
-        if 'first_name' not in kwargs:
-            kwargs['first_name'] = ''
-        if 'last_name' not in kwargs:
-            kwargs['last_name'] = ''
+        kwargs.setdefault('email', '')
+        kwargs.setdefault('password', '')
+        kwargs.setdefault('first_name', '')
+        kwargs.setdefault('last_name', '')
         super().__init__(*args, **kwargs)

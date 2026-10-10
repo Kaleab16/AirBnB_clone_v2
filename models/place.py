@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" Place Module for HBNB project """
+"""Place Module for HBNB project."""
 
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
@@ -27,8 +27,8 @@ place_amenity = Table(
 )
 
 
-class Place(BaseModel):
-    """ A place to stay """
+class Place(BaseModel, Base):
+    """A place to stay."""
 
     __tablename__ = 'places'
 
@@ -79,8 +79,7 @@ class Place(BaseModel):
         }
 
         for key, value in defaults.items():
-            if key not in kwargs:
-                kwargs[key] = value
+            kwargs.setdefault(key, value)
 
         super().__init__(*args, **kwargs)
 

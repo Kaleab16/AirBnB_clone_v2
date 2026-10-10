@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-"""This module instantiates a storage object."""
+"""Initialize the selected HBNB storage engine."""
+
 import os
 
 if os.getenv('HBNB_TYPE_STORAGE') == 'db':

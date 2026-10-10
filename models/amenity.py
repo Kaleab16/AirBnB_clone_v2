@@ -1,14 +1,14 @@
 #!/usr/bin/python3
-""" Amenity Module for HBNB project """
+"""Amenity Module for HBNB project."""
 
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
 
 
-class Amenity(BaseModel):
-    """ The amenity class """
+class Amenity(BaseModel, Base):
+    """The amenity class."""
 
     __tablename__ = 'amenities'
 
@@ -22,6 +22,5 @@ class Amenity(BaseModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize an Amenity."""
-        if 'name' not in kwargs:
-            kwargs['name'] = ''
+        kwargs.setdefault('name', '')
         super().__init__(*args, **kwargs)

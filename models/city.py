@@ -1,27 +1,28 @@
 #!/usr/bin/python3
-""" City Module for HBNB project """
+"""City model for the HBNB project."""
 
 from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.orm import relationship
 
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
 
 
-class City(BaseModel):
-    """ The city class, contains state ID and name """
+class City(BaseModel, Base):
+    """Represents a city belonging to a state."""
 
     __tablename__ = 'cities'
 
+    name = Column(String(128), nullable=False)
     state_id = Column(
         String(60),
         ForeignKey('states.id'),
         nullable=False
     )
-    name = Column(String(128), nullable=False)
+
+    state = relationship('State', back_populates='cities')
 
     def __init__(self, *args, **kwargs):
         """Initialize a City."""
-        if 'state_id' not in kwargs:
-            kwargs['state_id'] = ''
-        if 'name' not in kwargs:
-            kwargs['name'] = ''
+        kwargs.setdefault('name', '')
+        kwargs.setdefault('state_id', '')
         super().__init__(*args, **kwargs)
